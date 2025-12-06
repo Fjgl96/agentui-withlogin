@@ -28,40 +28,28 @@ export default function Page() {
   }
 
   // Función para enviar mensaje
-const enviar = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!msg) return;
-    setLoading(true);
+  const enviar = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!msg) return;
+    setLoading(true);
 
-    const userEmail = session.user?.email ?? '';
-    
-    try {
-        // 1. La llamada (está bien estructurada)
-        const res = await fetch(
-          `/api/proxy/chat?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
-          // Nota: Mira el punto B sobre la ruta
-        );
+    const userEmail = session.user?.email ?? '';
+    const res = await fetch(
+      `/api/chat?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
+    );
+    const texto = await res.text();
 
-        if (!res.ok) throw new Error("Error en el backend");
+    // Actualizar historial
+    setChat((c) => [
+      ...c,
+      { de: 'usuario', texto: msg },
+      { de: 'bot',     texto }
+    ]);
 
-        // 2. CORRECCIÓN AQUÍ: Parsear JSON
-        const data = await res.json(); 
-        const textoRespuesta = data.response; // Extraemos solo el mensaje
+    setMsg('');
+    setLoading(false);
+  };
 
-        // Actualizar historial
-        setChat((c) => [
-          ...c,
-          { de: 'usuario', texto: msg },
-          { de: 'bot',     texto: textoRespuesta } // Usamos el texto limpio
-        ]);
-    } catch (error) {
-        console.error(error);
-        alert("Hubo un error al conectar con el agente");
-    }
-
-    setMsg('');
-    setLoading(false);
-  };
   return (
     <div className="h-full flex flex-col p-4">
       <header className="mb-4 flex justify-between items-center">
