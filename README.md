@@ -103,8 +103,8 @@ src/app/page.tsx
 
 La API espera que se envíen las siguientes variables:
 
-- `msg`: mensaje del usuario.
-- `idagente`: identificador para mantener el historial conversacional.
+- `message`: mensaje del usuario.
+- `thread_id`: identificador para mantener el historial conversacional.
 
 Puedes adaptarlas según las necesidades de tu solución.
 
