@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   // recrea la URL de tu API remota usando los mismos parámetros
-  const url = `https://rag-service-740905672912.us-central1.run.app/` +
+  const url = `https://cfa-backend-740905672912.us-central1.run.app/` +
     new URL(request.url).searchParams.toString();
 
   // forward
