@@ -33,7 +33,7 @@ export default function Page() {
     if (!msg) return;
     setLoading(true);
 
-    const userEmail = session.user?.email ?? '';
+    const userEmail = session.user?.name ?? '';
     const res = await fetch(
       `/api/agent?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
     );
