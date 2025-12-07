@@ -19,6 +19,8 @@ export default function Page() {
   const [showScrollBtn, setShowScrollBtn] = useState(false);      // NUEVO
   const [copiadoId, setCopiadoId] = useState<string | null>(null); // NUEVO
   
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+
   const mensajesRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +28,35 @@ export default function Page() {
   const consultas = chat.filter((m) => m.de === 'usuario');
 
   // Scroll automático al último mensaje (solo si no scrolleó arriba)
+  useEffect(() => {
+    const fetchHistory = async () => {
+      // Solo carga si hay usuario (email) y aún no se ha cargado el historial
+      if (session?.user?.email && !historyLoaded) {
+        try {
+          setLoading(true);
+          // Llama a tu nueva ruta intermedia
+          const res = await fetch(`/api/history?thread_id=${encodeURIComponent(session.user.email)}`);
+          
+          if (res.ok) {
+            const data = await res.json();
+            // Si hay mensajes, actualiza el chat
+            if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+              setChat(data.messages);
+            }
+          }
+        } catch (error) {
+          console.error("Error cargando historial:", error);
+        } finally {
+          setLoading(false);
+          setHistoryLoaded(true); // Marca como cargado para que no se repita
+        }
+      }
+    };
+
+    fetchHistory();
+  }, [session, historyLoaded]);
+  
+  
   useEffect(() => {
     if (chatContainerRef.current && !showScrollBtn) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
