@@ -83,3 +83,13 @@ body {
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
