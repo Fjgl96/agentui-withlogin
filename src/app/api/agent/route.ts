@@ -1,17 +1,15 @@
-// src/app/api/agent/route.ts
 import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  // recrea la URL de tu API remota usando los mismos parámetros
-  const url = `https://cfa-backend-740905672912.us-central1.run.app/` +
-    new URL(request.url).searchParams.toString();
+  const searchParams = new URL(request.url).searchParams;
+  
+  const url = `https://cfa-backend-740905672912.us-central1.run.app/chat?${searchParams.toString()}`;
 
-  // forward
   const apiRes = await fetch(url);
-  const text   = await apiRes.text();
+  const data = await apiRes.json();
 
-  return new Response(text, {
+  return new Response(JSON.stringify(data), {
     status: apiRes.status,
-    headers: { 'Content-Type': 'text/plain' },
+    headers: { 'Content-Type': 'application/json' },
   });
 }

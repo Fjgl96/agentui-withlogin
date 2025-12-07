@@ -35,7 +35,7 @@ export default function Page() {
 
     const userEmail = session.user?.email ?? '';
     const res = await fetch(
-      `/chat?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
+    `/api/agent?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
     );
     const texto = await res.text();
 
