@@ -202,9 +202,9 @@ export default function Page() {
                 <span className="text-lg">📚</span> Consultar material de estudio financiero:
               </h3>
               <ul className="ml-6 space-y-1 text-sm text-gray-500 italic">
-                <li>"¿Qué es el WACC?"</li>
-                <li>"Explica el concepto de Duration"</li>
-                <li>"Busca información sobre el modelo Gordon Growth"</li>
+                <li>{'"¿Qué es el WACC?"'}</li>
+                <li>{'"Explica el concepto de Duration"'}</li>
+                <li>{'"Busca información sobre el modelo Gordon Growth"'}</li>
               </ul>
             </div>
 
@@ -214,10 +214,9 @@ export default function Page() {
                 <span className="text-lg">❓</span> Obtener ayuda:
               </h3>
               <ul className="ml-6 text-sm text-gray-500 italic">
-                <li>"Ayuda" o "¿Qué puedes hacer?"</li>
+                <li>{'"Ayuda" o "¿Qué puedes hacer?"'}</li>
               </ul>
             </div>
-          </div>
         )}
           {chat.map((m) => (
             <div
