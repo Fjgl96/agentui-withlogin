@@ -3,6 +3,8 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useState, FormEvent, useRef, useEffect } from 'react';
+import { LoadingMessage } from '@/components/LoadingMessage';
+
 import ReactMarkdown from 'react-markdown';
 
 type Mensaje = { id: string; de: 'usuario' | 'bot'; texto: string };
@@ -259,13 +261,7 @@ export default function Page() {
 
           {/* MODIFICADO: Indicador animado */}
           {loading && (
-            <div className="mr-auto bg-white shadow-sm border border-gray-200 p-4 rounded-lg">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-              </div>
-            </div>
+            <LoadingMessage />  // ← En vez de los 3 puntitos
           )}
         </div>
 
