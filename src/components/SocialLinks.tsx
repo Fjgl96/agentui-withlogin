@@ -5,7 +5,8 @@ export function SocialLinks() {
   return (
     <div className="mt-auto pt-6 pb-4 px-4 border-t border-neutral-700">
       <div className="flex justify-center gap-4">
-        
+        {/* Enlace de GitHub */}
+        <a // <-- Aquí faltaba la etiqueta inicial <a>
           href="https://github.com/Fjgl96"
           target="_blank"
           rel="noopener noreferrer"
@@ -13,9 +14,10 @@ export function SocialLinks() {
           aria-label="GitHub"
         >
           <Github className="w-5 h-5" />
-        </a>
+        </a> {/* <-- Aquí faltaba la etiqueta de cierre </a> */}
         
-        
+        {/* Enlace de LinkedIn */}
+        <a // <-- Aquí faltaba la etiqueta inicial <a>
           href="https://www.linkedin.com/in/fguerrerol01/"
           target="_blank"
           rel="noopener noreferrer"
@@ -23,7 +25,7 @@ export function SocialLinks() {
           aria-label="LinkedIn"
         >
           <Linkedin className="w-5 h-5" />
-        </a>
+        </a> {/* <-- Aquí faltaba la etiqueta de cierre </a> */}
       </div>
       
       <p className="text-center text-xs text-neutral-500 mt-2">
