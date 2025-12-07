@@ -3,6 +3,7 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useState, FormEvent } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 type Mensaje = { de: 'usuario' | 'bot'; texto: string };
 
@@ -20,7 +21,6 @@ export default function Page() {
           onClick={() => signIn('google')}
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg flex items-center gap-2"
         >
-          
           Login con Google
         </button>
       </div>
@@ -35,7 +35,7 @@ export default function Page() {
 
     const userEmail = session.user?.email ?? '';
     const res = await fetch(
-    `/api/agent?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
+      `/api/agent?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
     );
     const data = await res.json();
     const texto = data.response;
@@ -44,7 +44,7 @@ export default function Page() {
     setChat((c) => [
       ...c,
       { de: 'usuario', texto: msg },
-      { de: 'bot',     texto }
+      { de: 'bot', texto }
     ]);
 
     setMsg('');
@@ -69,15 +69,27 @@ export default function Page() {
         {chat.map((m, i) => (
           <div
             key={i}
-            className={`p-3 rounded max-w-[70%] ${
+            className={`p-4 rounded-lg max-w-[80%] ${
               m.de === 'usuario'
                 ? 'ml-auto bg-blue-100 text-right'
-                : 'mr-auto bg-gray-100'
+                : 'mr-auto bg-white shadow-sm border border-gray-200'
             }`}
           >
-            {m.texto}
+            {m.de === 'bot' ? (
+              <div className="prose prose-sm max-w-none text-left">
+                <ReactMarkdown>{m.texto}</ReactMarkdown>
+              </div>
+            ) : (
+              m.texto
+            )}
           </div>
         ))}
+        
+        {loading && (
+          <div className="mr-auto bg-white shadow-sm border border-gray-200 p-4 rounded-lg">
+            <span className="text-gray-500">Pensando...</span>
+          </div>
+        )}
       </div>
 
       <form onSubmit={enviar} className="mt-2 flex gap-2">
@@ -98,5 +110,5 @@ export default function Page() {
         </button>
       </form>
     </div>
-);
+  );
 }
