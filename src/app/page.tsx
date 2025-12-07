@@ -217,6 +217,7 @@ export default function Page() {
                 <li>{'"Ayuda" o "¿Qué puedes hacer?"'}</li>
               </ul>
             </div>
+          </div>
         )}
           {chat.map((m) => (
             <div
