@@ -67,3 +67,19 @@ body {
   border-radius: 0.25rem;
   font-size: 0.875rem;
 }
+
+/* Animación fade-in para botón scroll */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}

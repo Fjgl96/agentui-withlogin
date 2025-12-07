@@ -13,6 +13,8 @@ export default function Page() {
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);      // NUEVO
+  const [copiadoId, setCopiadoId] = useState<string | null>(null); // NUEVO
   
   const mensajesRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -20,12 +22,39 @@ export default function Page() {
   // Filtrar solo mensajes del usuario para el historial
   const consultas = chat.filter((m) => m.de === 'usuario');
 
-  // Scroll automático al último mensaje
+  // Scroll automático al último mensaje (solo si no scrolleó arriba)
   useEffect(() => {
-    if (chatContainerRef.current) {
+    if (chatContainerRef.current && !showScrollBtn) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [chat]);
+  }, [chat, showScrollBtn]);
+
+  // NUEVO: Detectar scroll para mostrar/ocultar botón
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const distanciaAlFinal = scrollHeight - scrollTop - clientHeight;
+    setShowScrollBtn(distanciaAlFinal > 100);
+  };
+
+  // NUEVO: Scroll hacia abajo
+  const scrollToBottom = () => {
+    chatContainerRef.current?.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: 'smooth'
+    });
+  };
+
+  // NUEVO: Copiar al portapapeles
+  const copiarTexto = async (id: string, texto: string) => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      setCopiadoId(id);
+      setTimeout(() => setCopiadoId(null), 2000);
+    } catch (err) {
+      console.error('Error al copiar:', err);
+    }
+  };
 
   // Navegar a un mensaje específico
   const scrollToMessage = (id: string) => {
@@ -120,8 +149,8 @@ export default function Page() {
         </div>
       </aside>
 
-      {/* Contenido principal */}
-      <div className="flex-1 flex flex-col">
+      {/* Contenido principal - AGREGADO: relative */}
+      <div className="flex-1 flex flex-col relative">
         {/* Header */}
         <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -141,8 +170,12 @@ export default function Page() {
           </button>
         </header>
 
-        {/* Chat */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Chat - AGREGADO: onScroll */}
+        <div 
+          ref={chatContainerRef} 
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto p-4 space-y-3"
+        >
           {chat.length === 0 && (
             <div className="text-center text-gray-500 mt-20">
               <p className="text-xl font-semibold">¿En qué puedo ayudarte hoy?</p>
@@ -154,28 +187,64 @@ export default function Page() {
             <div
               key={m.id}
               ref={(el) => { mensajesRefs.current[m.id] = el; }}
-              className={`p-4 rounded-lg max-w-[80%] transition-all duration-300 ${
+              className={`group relative p-4 rounded-lg max-w-[80%] transition-all duration-300 ${
                 m.de === 'usuario'
                   ? 'ml-auto bg-blue-600 text-white'
                   : 'mr-auto bg-white shadow-sm border border-gray-200'
               }`}
             >
               {m.de === 'bot' ? (
-                <div className="prose prose-sm max-w-none">
-                  <ReactMarkdown>{m.texto}</ReactMarkdown>
-                </div>
+                <>
+                  <div className="prose prose-sm max-w-none">
+                    <ReactMarkdown>{m.texto}</ReactMarkdown>
+                  </div>
+                  {/* NUEVO: Botón copiar */}
+                  <button
+                    onClick={() => copiarTexto(m.id, m.texto)}
+                    className="absolute top-2 right-2 p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Copiar respuesta"
+                  >
+                    {copiadoId === m.id ? (
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </button>
+                </>
               ) : (
                 m.texto
               )}
             </div>
           ))}
 
+          {/* MODIFICADO: Indicador animado */}
           {loading && (
             <div className="mr-auto bg-white shadow-sm border border-gray-200 p-4 rounded-lg">
-              <span className="text-gray-500">Pensando...</span>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
             </div>
           )}
         </div>
+
+        {/* NUEVO: Botón scroll to bottom */}
+        {showScrollBtn && (
+          <button
+            onClick={scrollToBottom}
+            className="absolute bottom-24 right-6 p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-all"
+            title="Ir al final"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
+        )}
 
         {/* Input */}
         <form onSubmit={enviar} className="p-4 bg-white border-t flex gap-2">
