@@ -37,7 +37,8 @@ export default function Page() {
     const res = await fetch(
     `/api/agent?thread_id=${encodeURIComponent(userEmail)}&message=${encodeURIComponent(msg)}`
     );
-    const texto = await res.text();
+    const data = await res.json();
+    const texto = data.response;
 
     // Actualizar historial
     setChat((c) => [
