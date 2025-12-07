@@ -6,6 +6,7 @@ import { useState, FormEvent, useRef, useEffect } from 'react';
 import { LoadingMessage } from '@/components/LoadingMessage';
 
 import ReactMarkdown from 'react-markdown';
+import { SocialLinks } from '@/components/SocialLinks';
 
 type Mensaje = { id: string; de: 'usuario' | 'bot'; texto: string };
 
@@ -149,6 +150,7 @@ export default function Page() {
             </ul>
           )}
         </div>
+        <SocialLinks />
       </aside>
 
       {/* Contenido principal - AGREGADO: relative */}
