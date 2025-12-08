@@ -2,21 +2,24 @@ import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const searchParams = new URL(request.url).searchParams;
-  
-  // Asegúrate de que esta URL coincida con tu backend desplegado
-  // Nota: Deberías usar una variable de entorno para la URL base en producción
   const backendUrl = "https://cfa-backend-740905672912.us-central1.run.app"; 
   
-  const url = `${backendUrl}/history?${searchParams.toString()}`;
+  // Parámetros de paginación
+  const threadId = searchParams.get('thread_id') || '';
+  const limit = searchParams.get('limit') || '50';
+  const offset = searchParams.get('offset') || '0';
+  
+  const url = `${backendUrl}/history?thread_id=${encodeURIComponent(threadId)}&limit=${limit}&offset=${offset}`;
 
   try {
     const apiRes = await fetch(url, {
-        // Evitar cache para tener siempre el historial fresco
-        cache: 'no-store' 
+      cache: 'no-store',
+      // Timeout para evitar esperas largas
+      signal: AbortSignal.timeout(10000)
     });
     
     if (!apiRes.ok) {
-        return new Response(JSON.stringify({ messages: [] }), { status: 200 });
+      return new Response(JSON.stringify({ messages: [], hasMore: false }), { status: 200 });
     }
 
     const data = await apiRes.json();
@@ -27,6 +30,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching history:", error);
-    return new Response(JSON.stringify({ messages: [] }), { status: 200 });
+    return new Response(JSON.stringify({ messages: [], hasMore: false }), { status: 200 });
   }
 }
