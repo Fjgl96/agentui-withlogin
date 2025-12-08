@@ -1,42 +1,56 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-// Forzamos que esta ruta sea dinámica para evitar caché de Vercel en streaming
-export const dynamic = 'force-dynamic';
+import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const searchParams = new URL(request.url).searchParams;
-  // Asegúrate de usar tu URL correcta de Cloud Run
   const backendUrl = "https://cfa-backend-740905672912.us-central1.run.app"; 
-  const url = `${backendUrl}/chat?${searchParams.toString()}`;
+  
+  // Parámetros de paginación
+  const threadId = searchParams.get('thread_id') || '';
+  const limit = searchParams.get('limit') || '50';
+  const offset = searchParams.get('offset') || '0';
+  
+  // Si es usuario invitado, retornar vacío inmediatamente (sin llamar al backend)
+  if (threadId.startsWith('guest_')) {
+    return new Response(JSON.stringify({ 
+      messages: [], 
+      hasMore: false, 
+      total: 0,
+      isGuest: true 
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  
+  const url = `${backendUrl}/history?thread_id=${encodeURIComponent(threadId)}&limit=${limit}&offset=${offset}`;
 
   try {
     const apiRes = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'text/plain',
-      },
-      // Importante: no cachear streaming
-      cache: 'no-store'
+      cache: 'no-store',
+      // Timeout de 10 segundos para evitar esperas largas
+      signal: AbortSignal.timeout(10000)
     });
-
+    
     if (!apiRes.ok) {
-      throw new Error(`Backend error: ${apiRes.status}`);
+      return new Response(JSON.stringify({ 
+        messages: [], 
+        hasMore: false,
+        total: 0 
+      }), { status: 200 });
     }
 
-    // Pasamos el stream directamente al cliente
-    return new NextResponse(apiRes.body, {
-      status: apiRes.status,
-      headers: {
-        'Content-Type': 'text/plain',
-        'Transfer-Encoding': 'chunked',
-      },
-    });
+    const data = await apiRes.json();
 
-  } catch (error) {
-    console.error("Error en proxy agent:", error);
-    return new NextResponse(JSON.stringify({ error: 'Error conectando al backend' }), { 
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
     });
+  } catch (error) {
+    console.error("Error fetching history:", error);
+    return new Response(JSON.stringify({ 
+      messages: [], 
+      hasMore: false,
+      total: 0 
+    }), { status: 200 });
   }
 }

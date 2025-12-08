@@ -215,65 +215,33 @@ export default function Page() {
   };
 
   // Enviar mensaje
-// ... dentro de Page() ...
-
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
     if (!msg.trim()) return;
     
     const threadId = getCurrentThreadId();
     if (!threadId) return;
-
-    // 1. Preparar UI optimista
-    const userMsgId = `msg-${Date.now()}`;
-    const botMsgId = `bot-${Date.now()}`;
-    const mensajeEnviado = msg;
-    const fechaIso = new Date().toISOString();
-
-    // Agregamos mensaje usuario y un placeholder vacío para el bot
-    setChat((prev) => [
-      ...prev, 
-      { id: userMsgId, de: 'usuario', texto: mensajeEnviado, fecha: fechaIso },
-      { id: botMsgId, de: 'bot', texto: '', fecha: fechaIso }
-    ]);
     
-    setMsg('');
     setLoading(true);
 
+    const nuevoId = `msg-${Date.now()}`;
+    const fechaLocal = new Date().toISOString();
+
+    setChat((c) => [...c, { id: nuevoId, de: 'usuario', texto: msg, fecha: fechaLocal }]);
+    const mensajeEnviado = msg;
+    setMsg('');
+
     try {
-      const response = await fetch(
+      const res = await fetch(
         `/api/agent?thread_id=${encodeURIComponent(threadId)}&message=${encodeURIComponent(mensajeEnviado)}`
       );
+      const data = await res.json();
+      const texto = data.response ?? 'Sin respuesta';
+      const fechaRespuesta = new Date().toISOString();
 
-      if (!response.ok) throw new Error('Error en la petición');
-      if (!response.body) throw new Error('Sin cuerpo de respuesta');
-
-      // 2. Leer el Stream
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let textoAcumulado = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        // Decodificar el chunk recibido
-        const chunk = decoder.decode(value, { stream: true });
-        textoAcumulado += chunk;
-
-        // 3. Actualizar UI en tiempo real
-        setChat((prev) => 
-          prev.map((m) => 
-            m.id === botMsgId ? { ...m, texto: textoAcumulado } : m
-          )
-        );
-      }
-
-    } catch (error) {
-      console.error(error);
-      setChat((prev) => prev.map(m => 
-        m.id === botMsgId ? { ...m, texto: 'Error: No se pudo conectar con el asistente.' } : m
-      ));
+      setChat((c) => [...c, { id: `msg-${Date.now()}`, de: 'bot', texto, fecha: fechaRespuesta }]);
+    } catch {
+      setChat((c) => [...c, { id: `msg-${Date.now()}`, de: 'bot', texto: 'Error al conectar.' }]);
     } finally {
       setLoading(false);
     }
