@@ -9,17 +9,34 @@ export async function GET(request: NextRequest) {
   const limit = searchParams.get('limit') || '50';
   const offset = searchParams.get('offset') || '0';
   
+  // Si es usuario invitado, retornar vacío inmediatamente (sin llamar al backend)
+  if (threadId.startsWith('guest_')) {
+    return new Response(JSON.stringify({ 
+      messages: [], 
+      hasMore: false, 
+      total: 0,
+      isGuest: true 
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  
   const url = `${backendUrl}/history?thread_id=${encodeURIComponent(threadId)}&limit=${limit}&offset=${offset}`;
 
   try {
     const apiRes = await fetch(url, {
       cache: 'no-store',
-      // Timeout para evitar esperas largas
+      // Timeout de 10 segundos para evitar esperas largas
       signal: AbortSignal.timeout(10000)
     });
     
     if (!apiRes.ok) {
-      return new Response(JSON.stringify({ messages: [], hasMore: false }), { status: 200 });
+      return new Response(JSON.stringify({ 
+        messages: [], 
+        hasMore: false,
+        total: 0 
+      }), { status: 200 });
     }
 
     const data = await apiRes.json();
@@ -30,6 +47,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching history:", error);
-    return new Response(JSON.stringify({ messages: [], hasMore: false }), { status: 200 });
+    return new Response(JSON.stringify({ 
+      messages: [], 
+      hasMore: false,
+      total: 0 
+    }), { status: 200 });
   }
 }
