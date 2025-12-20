@@ -393,7 +393,7 @@ export default function Page() {
     );
   }
 
-  // Loading state
+  // Estado de carga
   if (status === 'loading') {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-100">
